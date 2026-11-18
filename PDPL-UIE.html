@@ -17,6 +17,14 @@
   <link rel="stylesheet" href="./css/index.css">
   <style>
     /* 本页在参考模板之外新增的少量样式 */
+    /* 滑块初始化前：按 4:3 预留位置，两张图叠放，避免图片下载中卡片高度跳动 */
+    .results-carousel .twoitem > .twentytwenty-wrapper,
+    .twentytwenty-container-top { width: 100%; }
+    .twentytwenty-container-top { position: relative; aspect-ratio: 4 / 3; overflow: hidden; background: #222; }
+    .twentytwenty-container-top > .cmpcontent { position: absolute; top: 0; left: 0; width: 100%; }
+    .twentytwenty-container-top > .cmpcontent img { display: block; width: 100%; }
+    .twentytwenty-container-top img:not([src]) { visibility: hidden; }
+    .twentytwenty-container-top > .cmpcontent:first-child { z-index: 1; }
     .gallery-pending {
       font-size: 0.9rem;
       color: #aaa;
@@ -173,7 +181,7 @@
     // 原图文件名后缀默认 -Raw；用 -Input 的在 raw 里写明（字符串 = 两组都用，数组 = 逐组指定）。
     // 滑块上统一显示 Raw。
     // 顺序 = 先全参考后无参考；每组内正文视觉结果图 → 补充材料视觉结果图
-    var EXT = '.png';
+    var EXT = '.jpg';
     var GALLERY = [
       // 全参考：正文 Ref 图
       { name: '01_UIEB',          images: ['UIEB_83_1_1', 'UIEB_168_1_1'] },
@@ -198,56 +206,90 @@
     ];
     // ==========================================================
 
-    function loadImage(src) {
-      return new Promise(function (resolve) {
-        var img = new Image();
-        img.onload = function () { resolve(true); };
-        img.onerror = function () { resolve(false); };
-        img.src = src;
-      });
-    }
-
-    async function buildGallery() {
+    // 先插入图片标签（暂不下载，地址放在 data-src），轮播立即出现；
+    // 图片按卡片顺序排队下载（同时 4 张），每组两张下载好后再单独初始化成滑块，第一屏最先显示
+    var IMG_ORDER = [];
+    function buildGallery() {
       var root = document.getElementById('results-carousel-horizontal');
       for (var i = 0; i < GALLERY.length; i++) {
         var g = GALLERY[i];
         var slide = $('<div class="twoitem"></div>');
-        var shown = 0;
         for (var n = 0; n < g.images.length; n++) {
           var stem = g.images[n];
           var dir = 'images/PDPL-UIE/gallery/' + g.name + '/' + (n + 1) + '/';
           var ours = dir + stem + '-PDPL-UIE' + EXT;
           var sfx = Array.isArray(g.raw) ? g.raw[n] : (g.raw || '-Raw');
           var raw = dir + stem + sfx + EXT;
-          var ok = await Promise.all([loadImage(raw), loadImage(ours)]);
-          if (!ok[0] || !ok[1]) { console.warn('Missing image pair in ' + dir + ': ' + stem); continue; }
+          IMG_ORDER.push(raw, ours);
           slide.append(
-            '<div class="twentytwenty-container twentytwenty-container-top">' +
-              '<div class="cmpcontent"><img src="' + raw + '" alt="' + stem + ' raw"></div>' +
-              '<div class="cmpcontent"><img src="' + ours + '" alt="' + stem + ' PDPL-UIE"></div>' +
+            '<div class="twentytwenty-container-top">' +
+              '<div class="cmpcontent"><img data-src="' + raw + '" alt="' + stem + ' raw"></div>' +
+              '<div class="cmpcontent"><img data-src="' + ours + '" alt="' + stem + ' PDPL-UIE"></div>' +
             '</div>');
-          shown++;
         }
-        if (shown === 0) {
+        if (g.images.length === 0) {
           slide.append('<div class="gallery-pending">Images pending:<br>images/PDPL-UIE/gallery/' + g.name + '/</div>');
         }
         $(root).append(slide);
       }
     }
 
-    $(window).on('load', async function () {
-      await buildGallery();
+    // 每个图片地址一个"下载完成"信号；按 IMG_ORDER 顺序、同时 4 张地下载
+    var IMG_READY = {};
+    function queueDownloads(concurrency) {
+      IMG_ORDER.forEach(function (u) {
+        var d = {}; d.promise = new Promise(function (r) { d.resolve = r; }); IMG_READY[u] = d;
+      });
+      var next = 0;
+      function worker() {
+        if (next >= IMG_ORDER.length) return;
+        var u = IMG_ORDER[next++];
+        var im = new Image();
+        im.onload = function () { IMG_READY[u].resolve(true); worker(); };
+        im.onerror = function () { IMG_READY[u].resolve(false); worker(); };
+        im.src = u;
+      }
+      for (var k = 0; k < concurrency; k++) worker();
+    }
+
+    function whenLoaded(img) {
+      return new Promise(function (resolve) {
+        if (img.complete && img.naturalWidth > 0) { resolve(true); return; }
+        img.addEventListener('load', function () { resolve(true); }, { once: true });
+        img.addEventListener('error', function () { resolve(false); }, { once: true });
+      });
+    }
+
+    function initSliders() {
+      // 包括轮播循环时复制出来的卡片（与原卡片共用同一下载）
+      $('.twentytwenty-container-top').each(function () {
+        var box = $(this);
+        var imgs = box.find('img').toArray();
+        var urls = imgs.map(function (im) { return im.getAttribute('data-src'); });
+        Promise.all(urls.map(function (u) { return IMG_READY[u].promise; })).then(function (ok) {
+          if (!ok[0] || !ok[1]) {
+            console.warn('Missing image pair: ' + urls.join(' / '));
+            box.hide();
+            return;
+          }
+          imgs.forEach(function (im, k) { im.src = urls[k]; });  // 已在缓存中，立即可用
+          return Promise.all(imgs.map(whenLoaded)).then(function () {
+            box.twentytwenty({ before_label: 'Raw', after_label: 'PDPL-UIE', default_offset_pct: 0.75 });
+          });
+        });
+      });
+    }
+
+    $(function () {
+      buildGallery();
+      queueDownloads(4);
       bulmaCarousel.attach('#results-carousel-horizontal', {
         slidesToScroll: 1,
         slidesToShow: 3,
         loop: true,
         autoplay: true,
       });
-      $('.twentytwenty-container-top').twentytwenty({
-        before_label: 'Raw',
-        after_label: 'PDPL-UIE',
-        default_offset_pct: 0.75,
-      });
+      initSliders();
       bulmaCarousel.attach('#method-carousel', {
         slidesToScroll: 1,
         slidesToShow: 1,
