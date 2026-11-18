@@ -59,6 +59,10 @@
     }
     #method-carousel .method-item { padding: 0 0 2rem; margin-bottom: 0; }
     #method-carousel .method-item p { margin-top: 0.75rem; }
+    /* 标题：宽屏按 <br> 分三行（同论文断行）；窗口窄于 970px 时第三行（945px）放不下，取消 <br>，改为自动换行，避免单词独占一行（932–969px 两种方式都会剩单词，实测无解，保留） */
+    @media (max-width: 969px) {
+      .publication-title br { display: none; }
+    }
   </style>
 
   <script src="./js/jquery-3.2.1.min.js"></script>
@@ -84,7 +88,7 @@
         <div class="columns is-centered">
           <div class="column has-text-centered">
             <!-- 论文标题 -->
-            <h1 class="title is-1 publication-title">PDPL-UIE: Patch-wise Dual-Prompt Learning for All-in-One Underwater Image Enhancement</h1>
+            <h1 class="title is-1 publication-title">PDPL-UIE: <br>Patch-wise Dual-Prompt Learning for <br>All-in-One Underwater Image Enhancement</h1>
             <!-- 期刊名：录用后取消注释 -->
             <!-- <h2 class="title is-4 publication-venue">IEEE TGRS 2026</h2> -->
             <!-- 作者 -->
