@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="PDPL-UIE: Patch-wise Dual-Prompt Learning for All-in-One Underwater Image Enhancement">
+  <meta name="keywords" content="Underwater image enhancement, all-in-one, prompt learning, DA-CLIP.">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="PDPL-UIE">
+  <meta name="twitter:description" content="PDPL-UIE: Patch-wise Dual-Prompt Learning for All-in-One Underwater Image Enhancement">
+  <title>PDPL-UIE: Patch-wise Dual-Prompt Learning for All-in-One Underwater Image Enhancement</title>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+  <link rel="stylesheet" href="./css/bulma.min.css">
+  <link rel="stylesheet" href="./css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./css/twentytwenty.css">
+  <link rel="stylesheet" href="./css/index.css">
+  <style>
+    /* 本页在参考模板之外新增的少量样式 */
+    .gallery-pending {
+      font-size: 0.9rem;
+      color: #aaa;
+      padding: 60px 12px;
+      text-align: center;
+    }
+    .button[disabled] { pointer-events: none; }
+    /* 轮播整体缩放：宽度按比例缩小，高度随图片等比缩小 */
+    .carousel-wrap { position: relative; width: 90%; margin: 0 auto; }
+    #results-carousel-horizontal { width: 100%; }
+    .method-figure { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+    /* Method 轮播：与上方结果轮播同宽（同一容器的 90%），箭头叠在图上 */
+    #method-container { width: 100%; }  /* 防止 hero 中的容器按内容收缩为 0 宽 */
+    #method-container .column { min-width: 0; padding-left: 0; padding-right: 0; }  /* 防止 flex 列被轮播内容撑宽 */
+    #method-container .columns { margin-left: 0; margin-right: 0; }  /* 与结果轮播同一宽度基准 */
+    #method-carousel { width: 100%; overflow: hidden; }
+    /* 左右箭头：初始化后移到外层 .carousel-wrap，电脑上放在图外两侧，手机上仍叠在图内 */
+    .carousel-wrap > .slider-navigation-previous { left: 15px; }
+    .carousel-wrap > .slider-navigation-next { left: calc(100% - 57px); }
+    @media (min-width: 769px) {
+      .carousel-wrap > .slider-navigation-previous { left: -57px; }
+      .carousel-wrap > .slider-navigation-next { left: calc(100% + 15px); }
+    }
+    /* 手机上 Method 箭头对准图的垂直中线（图宽 ≈ 0.9 × (100vw − 48px)，高宽比约 0.42），避免压住图注文字 */
+    @media (max-width: 768px) {
+      #method-wrap > .slider-navigation-previous,
+      #method-wrap > .slider-navigation-next { top: calc(0.19 * (100vw - 48px)); margin-top: -21px; }
+    }
+    #method-carousel .method-item { padding: 0 0 2rem; margin-bottom: 0; }
+    #method-carousel .method-item p { margin-top: 0.75rem; }
+  </style>
+
+  <script src="./js/jquery-3.2.1.min.js"></script>
+  <script src="./js/jquery.event.move.js"></script>
+  <script src="./js/jquery.twentytwenty.js"></script>
+  <script src="./js/bulma-carousel.min.js"></script>
+  <script src="./js/fontawesome.all.min.js"></script>
+  <!-- MathJax：渲染 Method 图注中的公式 -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+  <!-- 论文基础信息 -->
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+            <!-- 论文标题 -->
+            <h1 class="title is-1 publication-title">PDPL-UIE: Patch-wise Dual-Prompt Learning for All-in-One Underwater Image Enhancement</h1>
+            <!-- 期刊名：录用后取消注释 -->
+            <!-- <h2 class="title is-4 publication-venue">IEEE TGRS 2026</h2> -->
+            <!-- 作者 -->
+            <div class="is-size-5 publication-authors">
+              <span class="author-block">Donghui Jia<sup>1,2,&dagger;</sup>,</span>
+              <span class="author-block">Yijian Wang<sup>3,&dagger;</sup>,</span>
+              <span class="author-block">Jiaquan Yan<sup>1,*</sup>,</span>
+              <span class="author-block">Peixian Zhuang<sup>4,*</sup></span>
+            </div>
+            <!-- 单位 -->
+            <div class="is-size-5 publication-authors">
+              <span class="author-block"><sup>1</sup>Minjiang University,&nbsp;&nbsp;</span>
+              <span class="author-block"><sup>2</sup>Harbin Engineering University,&nbsp;&nbsp;</span><br>
+              <span class="author-block"><sup>3</sup>Northwestern Polytechnical University,&nbsp;&nbsp;</span>
+              <span class="author-block"><sup>4</sup>University of Science and Technology Beijing</span>
+            </div>
+            <!-- 贡献说明 -->
+            <div class="is-size-5 publication-authors">
+              <small style="font-size: small;">
+                <span class="author-block"><sup>&dagger;</sup>Equal contribution&nbsp;&nbsp;</span>
+                <span class="author-block"><sup>*</sup>Corresponding authors</span>
+              </small>
+            </div>
+            <!-- 链接：有网址后填 href 并删掉 disabled 与 (coming soon) -->
+            <div class="column has-text-centered">
+              <div class="publication-links">
+                <span class="link-block">
+                  <a class="external-link button is-normal is-rounded is-dark" disabled title="Coming soon">
+                    <span class="icon"><i class="fas fa-file-pdf" style="color: orangered"></i></span>
+                    <span style="font-size: larger;">Paper (coming soon)</span>
+                  </a>
+                </span>
+                <span class="link-block">
+                  <a class="external-link button is-normal is-rounded is-dark" disabled title="Coming soon">
+                    <span class="icon"><i class="fab fa-github"></i></span>
+                    <span style="font-size: larger;">Code (coming soon)</span>
+                  </a>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 摘要 -->
+  <section class="section pt-0">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column">
+          <h2 class="title is-3 gallery-title">🔥 Abstract 🔥</h2>
+          <div class="content has-text-justified">
+            <p>
+              Underwater image enhancement (UIE) aims to restore images affected by complex underwater degradations.
+              Multiple degradations may occur in a single image, and correcting one may interfere with the restoration of another.
+              All-in-one UIE (AiO-UIE) seeks to accommodate diverse and mixed degradations within a unified, adaptive model.
+              However, existing prompt-based AiO-UIE methods typically rely on image-level visual or text prompts alone and lack
+              region-specific and complementary guidance, limiting their ability to handle spatially varying mixed degradations.
+              To address these limitations, we propose PDPL-UIE, a patch-wise dual-prompt learning framework for AiO-UIE.
+              PDPL-UIE incorporates two prompt-learning modules: Patch-wise Degradation-Aware Text Prompting (PDATP) and
+              Patch-wise Multi-Scale Visual Prompting (PMSVP).
+              PDATP uses Degradation-Aware Contrastive Language-Image Pre-training (DA-CLIP) to construct image-conditioned text
+              prompts from predefined degradation descriptions, providing semantics that distinguish multiple degradations and
+              mitigate degradation interference.
+              PMSVP provides multi-scale visual prompts to guide the recovery of local structures and details.
+              For each local feature patch, PDPL-UIE dynamically retrieves and fuses relevant text and visual prompts to jointly
+              guide restoration under spatially varying mixed degradations.
+              Extensive experiments on full-reference and no-reference datasets demonstrate that PDPL-UIE outperforms several
+              leading methods in both quantitative and qualitative comparisons.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 视觉结果：每个数据集一张卡片，每张卡片若干组 Input | PDPL-UIE 滑块 -->
+  <h2 class="title is-3 gallery-title">🔥 Visual Results 🔥</h2>
+  <section class="hero is-light is-small">
+    <div class="hero-body">
+      <div class="container">
+        <div class="carousel-wrap">
+          <div id="results-carousel-horizontal" class="carousel results-carousel"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // ================= 图片配置（只需改这里） =================
+    // 每行一个数据集（一张卡片），轮播按此顺序显示。
+    // name   = images/PDPL-UIE/gallery/ 下的数据集文件夹名
+    // images = 图片名（不带后缀和扩展名），第 1 个在子文件夹 1/，第 2 个在 2/，按显示顺序
+    // 例：02_EUVP 的 'EUVP_05542_1_1' 对应
+    //   02_EUVP/1/EUVP_05542_1_1-Raw.png（或 -Input.png）  原图（640×480）
+    //   02_EUVP/1/EUVP_05542_1_1-PDPL-UIE.png              PDPL-UIE 增强结果（640×480）
+    // 原图文件名后缀默认 -Raw；用 -Input 的在 raw 里写明（字符串 = 两组都用，数组 = 逐组指定）。
+    // 滑块上统一显示 Raw。
+    // 顺序 = 先全参考后无参考；每组内正文视觉结果图 → 补充材料视觉结果图
+    var EXT = '.png';
+    var GALLERY = [
+      // 全参考：正文 Ref 图
+      { name: '01_UIEB',          images: ['UIEB_83_1_1', 'UIEB_168_1_1'] },
+      { name: '02_EUVP',          images: ['EUVP_05542_1_1', 'EUVP_01097_1_1'] },
+      { name: '03_LSUI',          images: ['UIEB_506_1_1', 'LSUI_0021_1_1'] },
+      // 全参考：补充材料 Ref_S1、Ref_S2
+      { name: '04_NYU-U',         images: ['NUY-U_1292_3_3', 'NUY-U_0824_5_5'], raw: '-Input' },
+      { name: '05_SUID',          images: ['SUID_002_20_1', 'SUID_006_14_1'], raw: '-Input' },
+      { name: '06_UFO-120',       images: ['UFO_1290_1_1', 'UIEB_531_1_1'], raw: ['-Input', '-Raw'] },
+      { name: '07_UGAN',          images: ['UGAN_3218_1_1', 'UGAN_3619_1_1'], raw: '-Input' },
+      { name: '08_UVE38K',        images: ['UVE38K_32603_1_1', 'UVE38K_32157_1_1'], raw: '-Input' },
+      // 无参考：正文 NoRef 图
+      { name: '09_C60',           images: ['C60_10226', 'C60_15738'] },
+      { name: '10_U45',           images: ['U45_green_3', 'U45_blue_16'] },
+      { name: '11_UEQAB',         images: ['UEQAB_160', 'UEQAB_793'] },
+      // 无参考：补充材料 NoRef_S1、NoRef_S2
+      { name: '12_GoogleImage',   images: ['Google_Image_GI_15', 'Google_Image_GI_2'] },
+      { name: '13_NatureFootage', images: ['Nature_Footage_NF_367', 'Nature_Footage_NF_144'] },
+      { name: '14_OceanDark',     images: ['OceanDark2_0_35', 'OceanDark2_0_26'] },
+      { name: '15_Sea-Thru',      images: ['Seathru_D1_linearPNG_T_S03272', 'Seathru_D5_linearPNG_LFT_3374'] },
+      { name: '16_UGAN-test',     images: ['UGAN_test_n01496331_2820', 'UGAN_test_n01917289_183'] },
+    ];
+    // ==========================================================
+
+    function loadImage(src) {
+      return new Promise(function (resolve) {
+        var img = new Image();
+        img.onload = function () { resolve(true); };
+        img.onerror = function () { resolve(false); };
+        img.src = src;
+      });
+    }
+
+    async function buildGallery() {
+      var root = document.getElementById('results-carousel-horizontal');
+      for (var i = 0; i < GALLERY.length; i++) {
+        var g = GALLERY[i];
+        var slide = $('<div class="twoitem"></div>');
+        var shown = 0;
+        for (var n = 0; n < g.images.length; n++) {
+          var stem = g.images[n];
+          var dir = 'images/PDPL-UIE/gallery/' + g.name + '/' + (n + 1) + '/';
+          var ours = dir + stem + '-PDPL-UIE' + EXT;
+          var sfx = Array.isArray(g.raw) ? g.raw[n] : (g.raw || '-Raw');
+          var raw = dir + stem + sfx + EXT;
+          var ok = await Promise.all([loadImage(raw), loadImage(ours)]);
+          if (!ok[0] || !ok[1]) { console.warn('Missing image pair in ' + dir + ': ' + stem); continue; }
+          slide.append(
+            '<div class="twentytwenty-container twentytwenty-container-top">' +
+              '<div class="cmpcontent"><img src="' + raw + '" alt="' + stem + ' raw"></div>' +
+              '<div class="cmpcontent"><img src="' + ours + '" alt="' + stem + ' PDPL-UIE"></div>' +
+            '</div>');
+          shown++;
+        }
+        if (shown === 0) {
+          slide.append('<div class="gallery-pending">Images pending:<br>images/PDPL-UIE/gallery/' + g.name + '/</div>');
+        }
+        $(root).append(slide);
+      }
+    }
+
+    $(window).on('load', async function () {
+      await buildGallery();
+      bulmaCarousel.attach('#results-carousel-horizontal', {
+        slidesToScroll: 1,
+        slidesToShow: 3,
+        loop: true,
+        autoplay: true,
+      });
+      $('.twentytwenty-container-top').twentytwenty({
+        before_label: 'Raw',
+        after_label: 'PDPL-UIE',
+        default_offset_pct: 0.75,
+      });
+      bulmaCarousel.attach('#method-carousel', {
+        slidesToScroll: 1,
+        slidesToShow: 1,
+        loop: true,
+        autoplay: true,
+        autoplaySpeed: 5000,
+        breakpoints: [],  // 关闭插件默认断点，任何屏宽都只显示 1 张
+      });
+      // 把箭头从轮播内部（会被裁切）移到外层 .carousel-wrap，点击事件随元素保留
+      $('.carousel-wrap').each(function () {
+        $(this).append($(this).find('.slider-navigation-previous, .slider-navigation-next'));
+      });
+    });
+  </script>
+
+  <!-- 方法 -->
+  <h2 class="title is-3 gallery-title">🔥 Method 🔥</h2>
+  <section class="section hero is-light is-small">
+    <div id="method-container" class="container">
+      <div class="columns is-centered has-text-centered">
+        <div class="column">
+          <!-- 一次显示一张图，左右箭头切换，每 5 秒自动切换 -->
+          <div id="method-wrap" class="carousel-wrap">
+          <div id="method-carousel" class="carousel">
+          <div class="method-item content has-text-justified">
+            <img class="method-figure" src="images/PDPL-UIE/method/Overall_4_web.png" alt="Overall framework of PDPL-UIE">
+            <p>
+              Overall framework of PDPL-UIE.
+              PDATP constructs degradation-aware text prompts from the content feature $\boldsymbol{f}_{\mathrm{c}}$ and
+              degradation feature $\boldsymbol{f}_{\mathrm{d}}$ extracted by a frozen DA-CLIP image encoder, together with fixed
+              underwater degradation descriptions.
+              At decoder level $l\in\{3,2,1\}$, $\boldsymbol{F}_l$ denotes the decoder feature, while
+              $\boldsymbol{P}_l^{\mathrm{text}}$ and $\boldsymbol{P}_l^{\mathrm{visual}}$ denote the text and visual prompts
+              retrieved for its local patches from PDATP and the corresponding PMSVP pool, respectively.
+              The retrieved prompts are concatenated and fused with the local patches of $\boldsymbol{F}_l$ through
+              cross-attention to guide restoration.
+            </p>
+          </div>
+          <div class="method-item content has-text-justified">
+            <img class="method-figure" src="images/PDPL-UIE/method/Detailed_4_web.png" alt="Detailed prompt construction and retrieval in PDPL-UIE">
+            <p>
+              Detailed prompt construction and retrieval in PDPL-UIE.
+              (a) PDATP constructs a text prompt pool from DA-CLIP content and degradation features together with fixed
+              degradation descriptions, which are abbreviated for display.
+              The semantic anchoring loss preserves the correspondence between the learned prompts and the fixed descriptions.
+              (b) Aligned grids partition the degraded image and decoder features into corresponding local patches.
+              Each local feature patch retrieves the three most similar text prompts, while patch statistics provide weak
+              supervision for all six similarity scores.
+              PMSVP then retrieves visual prompts for the same local feature patch from the corresponding visual prompt pool.
+            </p>
+          </div>
+          </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 引用：录用后补 journal / volume / pages / doi -->
+  <section class="section pt-0" id="BibTeX">
+    <div class="container is-max-desktop content">
+      <h2 class="title" style="margin-top: 20px;">Citation</h2>
+      <pre class="selectable"><code>@article{jia2026pdpluie,
+  title={{PDPL-UIE}: Patch-wise Dual-Prompt Learning for All-in-One Underwater Image Enhancement},
+  author={Donghui Jia and Yijian Wang and Jiaquan Yan and Peixian Zhuang},
+  year={2026}
+}</code></pre>
+    </div>
+  </section>
+
+  <!-- 模板来源 -->
+  <footer class="footer pt-4 pb-0">
+    <div class="container">
+      <div class="columns is-centered">
+        <div class="column is-8">
+          <div class="content">
+            <p>
+              Website template based on
+              <a href="https://github.com/nerfies/nerfies.github.io">Nerfies</a> and
+              <a href="https://marigoldmonodepth.github.io/">Marigold</a>
+              and licensed under
+              <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">CC-BY-SA-4.0</a>.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
