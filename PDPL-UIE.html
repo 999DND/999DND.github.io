@@ -21,6 +21,8 @@
     .results-carousel .twoitem > .twentytwenty-wrapper,
     .twentytwenty-container-top { width: 100%; }
     .twentytwenty-container-top { position: relative; aspect-ratio: 4 / 3; overflow: hidden; background: #222; }
+    /* 滑块插件初始化时把容器高度写成固定像素，转屏或改变窗口宽度后不再更新，图片上下会露出深色底；这里让高度始终按 4:3 随宽度计算（全部图片为 640×480） */
+    .twentytwenty-container-top.twentytwenty-container { height: auto !important; }
     .twentytwenty-container-top > .cmpcontent { position: absolute; top: 0; left: 0; width: 100%; }
     .twentytwenty-container-top > .cmpcontent img { display: block; width: 100%; }
     .twentytwenty-container-top img:not([src]) { visibility: hidden; }
@@ -35,6 +37,8 @@
     /* 轮播整体缩放：宽度按比例缩小，高度随图片等比缩小 */
     .carousel-wrap { position: relative; width: 90%; margin: 0 auto; }
     #results-carousel-horizontal { width: 100%; }
+    /* 结果卡片：高度随两张图自适应（原 95% 会裁掉图片上下边），底部固定留 26px 放分页圆点，避免手机横屏时圆点压住卡片 */
+    #results-carousel-horizontal .twoitem { height: auto; margin: 5px 5px 26px; }
     .method-figure { display: block; margin: 0 auto; max-width: 100%; height: auto; }
     /* Method 轮播：与上方结果轮播同宽（同一容器的 90%），箭头叠在图上 */
     #method-container { width: 100%; }  /* 防止 hero 中的容器按内容收缩为 0 宽 */
