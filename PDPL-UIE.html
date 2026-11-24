@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="description" content="PDPL-UIE: Patch-wise Dual-Prompt Learning for All-in-One Underwater Image Enhancement">
-  <meta name="keywords" content="Underwater image enhancement, all-in-one, prompt learning, DA-CLIP.">
+  <meta name="keywords" content="Underwater image enhancement, all-in-one, prompt learning, patch-wise text-visual prompting.">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="PDPL-UIE">
@@ -144,8 +144,8 @@
           <div class="content has-text-justified">
             <p>
               Underwater image enhancement (UIE) aims to restore images affected by complex underwater degradations.
-              Multiple degradations may occur in a single image, and correcting one may interfere with the restoration of another.
-              All-in-one UIE (AiO-UIE) seeks to accommodate diverse and mixed degradations within a unified, adaptive model.
+              Unlike standard UIE methods, which suffer from degradation interference due to static parameter mappings,
+              all-in-one UIE (AiO-UIE) seeks to accommodate diverse and mixed degradations within a unified, adaptive model.
               However, existing prompt-based AiO-UIE methods typically rely on image-level visual or text prompts alone and lack
               region-specific and complementary guidance, limiting their ability to handle spatially varying mixed degradations.
               To address these limitations, we propose PDPL-UIE, a patch-wise dual-prompt learning framework for AiO-UIE.
